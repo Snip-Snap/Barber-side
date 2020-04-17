@@ -1,4 +1,4 @@
-package graphqltest
+package api
 
 import (
 	"log"

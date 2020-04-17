@@ -2,10 +2,11 @@ package main
 
 import (
 	// This is a named import from another local package. Need for dbconn methods.
-	gql "graphqltest"
 	"log"
 	"net/http"
 	"os"
+
+	gql "api"
 
 	"github.com/99designs/gqlgen/handler"
 )
@@ -18,8 +19,10 @@ func main() {
 		port = defaultPort
 	}
 	print("connecting to psql")
-	gql.ConnectPSQL()
-	defer gql.ClosePSQL()
+	ConnectPSQL()
+	defer ClosePSQL()
+
+	// srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 	http.Handle("/query", handler.GraphQL(gql.NewExecutableSchema(gql.Config{Resolvers: &gql.Resolver{}})))

@@ -31,11 +31,6 @@ input NewClient {
   phoneNumber:    String!
 }
 
-type Appointment {
-  apptID:         ID!
-  clientID:       
-}
-
 type Client {
   clientID:       ID!
   userName:       String!

@@ -1,4 +1,4 @@
-package graphqltest
+package api
 
 import (
 	"bufio"
@@ -28,7 +28,7 @@ func ConnectPSQL() {
 
 	creds := parseCreds("/run/secrets")
 	//code when you run manually without docker
-//	creds := parseCreds("../../dbcreds.config")
+	//	creds := parseCreds("../../dbcreds.config")
 
 	var err error
 
