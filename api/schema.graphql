@@ -14,14 +14,13 @@ type Response{
   error:          String!
 }
 
-type Client {
-  clientID:       ID!
-  userName:       String!
-  password:       String!
-  fullName:       String!
-  gender:         Boolean
-  phoneNumber:    String!
 
+input NewBarber{
+  userName:     String!
+  password:     String!
+  fullName:     String!
+  gender:       Boolean!
+  PhoneNumber:  String!
 }
 
 input NewClient {
@@ -32,19 +31,33 @@ input NewClient {
   phoneNumber:    String!
 }
 
-type Barber{
-  barberID:     ID!
-  userName:     String!
-  password:     String!
-  fullName:     String!
-  gender:       Boolean
-  PhoneNumber:  String!
+type Appointment {
+  apptID:         ID!
+  clientID:       
 }
 
-input NewBarber{
+type Client {
+  clientID:       ID!
+  userName:       String!
+  password:       String!
+  firstName:      String!
+  lastName:       String!
+  phoneNumber:    String!
+  gender:         Boolean
+}
+
+# hireDate and dismissDate type may need to be modified
+type Barber{
+  barberID:     ID!
+  shopID:       Int!
   userName:     String!
   password:     String!
-  fullName:     String!
-  gender:       Boolean!
+  firstName:    String!
+  lastName:     String!
   PhoneNumber:  String!
+  gender:       Boolean
+  hireDate:     String!
+  dismissDate:  String
+  seatNum:      Int!
 }
+
