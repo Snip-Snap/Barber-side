@@ -24,8 +24,6 @@ func main() {
 	database.ConnectPSQL()
 	defer database.ClosePSQL()
 
-	// srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
 	http.Handle("/query", handler.GraphQL(generated.NewExecutableSchema(generated.Config{Resolvers: &api.Resolver{}})))
 

@@ -31,8 +31,7 @@ func (r *mutationResolver) SignupClient(ctx context.Context, input model.NewClie
 	return res, nil
 }
 
-func (r *mutationResolver) SignUpBarber(ctx context.Context,
-	input model.NewBarber) (*model.Response, error) {
+func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error) {
 	// Why doesn't barber := barber.Barber work? It can't infer its type?
 	var barber barber.Barber
 	barber.ShopID = input.ShopID
@@ -49,27 +48,33 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context,
 
 	barber.SaveOne()
 
-	res := &model.Response{Error: "Inserted barber!"}
+	res := &model.Response{Error: "Error message"}
 
 	return res, nil
 }
 
-func (r *queryResolver) GetAllBarbers(ctx context.Context) (*model.Response, error) {
-	// selectAllBarbers := "select * from barber"
-	// stmt, err := Db.Prepare(selectAllBarbers)
-	// CheckError(err)
-	// defer stmt.Close()
+func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, error) {
+	var resultBarbers []*model.Barber
+	var dbBarbers []barber.Barber
+	dbBarbers = barber.GetAll()
 
-	// queryResult, err := stmt.Query()
-	// CheckError(err)
-	// // res := &model.Response{Error: "Okay"}
-	// barbers := []*model.Barber{}
-	// for queryResult.Next() {
+	for _, barber := range dbBarbers {
+		resultBarbers = append(resultBarbers, &model.Barber{
+			BarberID:    barber.BarberID,
+			ShopID:      barber.ShopID,
+			UserName:    barber.UserName,
+			Password:    barber.Password,
+			FirstName:   barber.FirstName,
+			LastName:    barber.LastName,
+			PhoneNumber: barber.PhoneNumber,
+			Gender:      barber.Gender,
+			Dob:         barber.Dob,
+			HireDate:    barber.HireDate,
+			DismissDate: barber.DismissDate,
+			SeatNum:     barber.SeatNum})
+	}
 
-	// }
-
-	res := &model.Response{Error: "nothing here"}
-	return res, nil
+	return resultBarbers, nil
 }
 
 func (r *queryResolver) Response(ctx context.Context) (*model.Response, error) {

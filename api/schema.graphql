@@ -8,7 +8,7 @@ type Mutation {
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
-  getAllBarbers:Response
+  getAllBarbers: [Barber!]!
   response: Response
 }
 type Response{

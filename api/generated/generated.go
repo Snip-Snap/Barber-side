@@ -9,6 +9,7 @@ import (
 	"graphqltest/api/model"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -87,7 +88,7 @@ type MutationResolver interface {
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
 }
 type QueryResolver interface {
-	GetAllBarbers(ctx context.Context) (*model.Response, error)
+	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
 	Response(ctx context.Context) (*model.Response, error)
 }
 
@@ -358,7 +359,7 @@ type Mutation {
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
-  getAllBarbers:Response
+  getAllBarbers: [Barber!]!
   response: Response
 }
 type Response{
@@ -1237,11 +1238,14 @@ func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field grap
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.Response)
+	res := resTmp.([]*model.Barber)
 	fc.Result = res
-	return ec.marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBarberᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_response(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2745,6 +2749,9 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllBarbers(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
 				return res
 			})
 		case "response":
@@ -3044,6 +3051,57 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 // endregion **************************** object.gotpl ****************************
 
 // region    ***************************** type.gotpl *****************************
+
+func (ec *executionContext) marshalNBarber2graphqltestᚋapiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v model.Barber) graphql.Marshaler {
+	return ec._Barber(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBarberᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Barber) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNBarber2ᚖgraphqltestᚋapiᚋmodelᚐBarber(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
+}
+
+func (ec *executionContext) marshalNBarber2ᚖgraphqltestᚋapiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v *model.Barber) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Barber(ctx, sel, v)
+}
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
