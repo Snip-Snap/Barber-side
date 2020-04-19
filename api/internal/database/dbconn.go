@@ -1,18 +1,21 @@
-package api
+package database
 
 import (
 	"bufio"
 	"database/sql"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
+var Db *sql.DB
 
 func parseCreds(fn string) string {
 	infile, err := os.Open(fn)
-	CheckError(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	filescanner := bufio.NewScanner(infile)
 
@@ -26,17 +29,19 @@ func parseCreds(fn string) string {
 
 func ConnectPSQL() {
 
-	creds := parseCreds("/run/secrets")
+	// creds := parseCreds("/run/secrets")
 	//code when you run manually without docker
-	//	creds := parseCreds("../../dbcreds.config")
+	creds := parseCreds("../../dbcreds.config")
 
 	var err error
 
-	db, err = sql.Open("postgres", creds)
+	Db, err = sql.Open("postgres", creds)
 	print("connect psql")
-	CheckError(err)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func ClosePSQL() {
-	db.Close()
+	Db.Close()
 }

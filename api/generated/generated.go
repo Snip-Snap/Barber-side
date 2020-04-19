@@ -45,6 +45,7 @@ type ComplexityRoot struct {
 	Barber struct {
 		BarberID    func(childComplexity int) int
 		DismissDate func(childComplexity int) int
+		Dob         func(childComplexity int) int
 		FirstName   func(childComplexity int) int
 		Gender      func(childComplexity int) int
 		HireDate    func(childComplexity int) int
@@ -72,7 +73,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Response func(childComplexity int) int
+		GetAllBarbers func(childComplexity int) int
+		Response      func(childComplexity int) int
 	}
 
 	Response struct {
@@ -85,6 +87,7 @@ type MutationResolver interface {
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
 }
 type QueryResolver interface {
+	GetAllBarbers(ctx context.Context) (*model.Response, error)
 	Response(ctx context.Context) (*model.Response, error)
 }
 
@@ -116,6 +119,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Barber.DismissDate(childComplexity), true
+
+	case "Barber.dob":
+		if e.complexity.Barber.Dob == nil {
+			break
+		}
+
+		return e.complexity.Barber.Dob(childComplexity), true
 
 	case "Barber.firstName":
 		if e.complexity.Barber.FirstName == nil {
@@ -253,6 +263,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SignupClient(childComplexity, args["input"].(model.NewClient)), true
 
+	case "Query.getAllBarbers":
+		if e.complexity.Query.GetAllBarbers == nil {
+			break
+		}
+
+		return e.complexity.Query.GetAllBarbers(childComplexity), true
+
 	case "Query.response":
 		if e.complexity.Query.Response == nil {
 			break
@@ -341,19 +358,26 @@ type Mutation {
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
+  getAllBarbers:Response
   response: Response
 }
 type Response{
-  error:          String!
+  error:        String!
 }
 
 
 input NewBarber{
+  shopID:       Int!
   userName:     String!
   password:     String!
-  fullName:     String!
-  gender:       Boolean!
+  firstName:    String!
+  lastName:     String!
   PhoneNumber:  String!
+  gender:       String
+  dob:          String!
+  hireDate:     String!
+  dismissDate:  String
+  seatNum:      Int!
 }
 
 input NewClient {
@@ -383,7 +407,8 @@ type Barber{
   firstName:    String!
   lastName:     String!
   PhoneNumber:  String!
-  gender:       Boolean
+  gender:       String
+  dob:          String!
   hireDate:     String!
   dismissDate:  String
   seatNum:      Int!
@@ -739,9 +764,43 @@ func (ec *executionContext) _Barber_gender(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*bool)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Barber_dob(ctx context.Context, field graphql.CollectedField, obj *model.Barber) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Barber",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dob, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Barber_hireDate(ctx context.Context, field graphql.CollectedField, obj *model.Barber) (ret graphql.Marshaler) {
@@ -1141,6 +1200,37 @@ func (ec *executionContext) _Mutation_signUpBarber(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().SignUpBarber(rctx, args["input"].(model.NewBarber))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Response)
+	fc.Result = res
+	return ec.marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAllBarbers(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2349,6 +2439,12 @@ func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj int
 
 	for k, v := range asMap {
 		switch k {
+		case "shopID":
+			var err error
+			it.ShopID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "userName":
 			var err error
 			it.UserName, err = ec.unmarshalNString2string(ctx, v)
@@ -2361,21 +2457,51 @@ func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "fullName":
+		case "firstName":
 			var err error
-			it.FullName, err = ec.unmarshalNString2string(ctx, v)
+			it.FirstName, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "gender":
+		case "lastName":
 			var err error
-			it.Gender, err = ec.unmarshalNBoolean2bool(ctx, v)
+			it.LastName, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 		case "PhoneNumber":
 			var err error
 			it.PhoneNumber, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "gender":
+			var err error
+			it.Gender, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dob":
+			var err error
+			it.Dob, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "hireDate":
+			var err error
+			it.HireDate, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "dismissDate":
+			var err error
+			it.DismissDate, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "seatNum":
+			var err error
+			it.SeatNum, err = ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2483,6 +2609,11 @@ func (ec *executionContext) _Barber(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "gender":
 			out.Values[i] = ec._Barber_gender(ctx, field, obj)
+		case "dob":
+			out.Values[i] = ec._Barber_dob(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "hireDate":
 			out.Values[i] = ec._Barber_hireDate(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2605,6 +2736,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "getAllBarbers":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAllBarbers(ctx, field)
+				return res
+			})
 		case "response":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {

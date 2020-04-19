@@ -6,7 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	gql "api"
+	"graphqltest/api"
+	"graphqltest/api/generated"
+	"graphqltest/api/internal/database"
 
 	"github.com/99designs/gqlgen/handler"
 )
@@ -19,13 +21,13 @@ func main() {
 		port = defaultPort
 	}
 	print("connecting to psql")
-	ConnectPSQL()
-	defer ClosePSQL()
+	database.ConnectPSQL()
+	defer database.ClosePSQL()
 
 	// srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 
 	http.Handle("/", handler.Playground("GraphQL playground", "/query"))
-	http.Handle("/query", handler.GraphQL(gql.NewExecutableSchema(gql.Config{Resolvers: &gql.Resolver{}})))
+	http.Handle("/query", handler.GraphQL(generated.NewExecutableSchema(generated.Config{Resolvers: &api.Resolver{}})))
 
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))

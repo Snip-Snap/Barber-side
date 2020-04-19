@@ -8,19 +8,26 @@ type Mutation {
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
+  getAllBarbers:Response
   response: Response
 }
 type Response{
-  error:          String!
+  error:        String!
 }
 
 
 input NewBarber{
+  shopID:       Int!
   userName:     String!
   password:     String!
-  fullName:     String!
-  gender:       Boolean!
+  firstName:    String!
+  lastName:     String!
   PhoneNumber:  String!
+  gender:       String
+  dob:          String!
+  hireDate:     String!
+  dismissDate:  String
+  seatNum:      Int!
 }
 
 input NewClient {
@@ -50,7 +57,8 @@ type Barber{
   firstName:    String!
   lastName:     String!
   PhoneNumber:  String!
-  gender:       Boolean
+  gender:       String
+  dob:          String!
   hireDate:     String!
   dismissDate:  String
   seatNum:      Int!
