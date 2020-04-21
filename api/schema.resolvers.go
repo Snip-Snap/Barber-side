@@ -8,6 +8,7 @@ import (
 	"graphqltest/api/generated"
 	"graphqltest/api/internal/barber"
 	"graphqltest/api/model"
+	"strconv"
 )
 
 func (r *mutationResolver) SignupClient(ctx context.Context, input model.NewClient) (*model.Response, error) {
@@ -56,6 +57,7 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarb
 func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, error) {
 	var resultBarbers []*model.Barber
 	var dbBarbers []barber.Barber
+
 	dbBarbers = barber.GetAll()
 
 	for _, barber := range dbBarbers {
@@ -75,6 +77,31 @@ func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, err
 	}
 
 	return resultBarbers, nil
+}
+
+func (r *queryResolver) GetBarberByID(ctx context.Context,
+	id int) (*model.Barber, error) {
+	var resultBarber *model.Barber
+	var dbBarber barber.Barber
+
+	// dbBarber.BarberID = input.BarberID
+	dbBarber.BarberID = strconv.Itoa(id)
+	dbBarber.Get()
+
+	resultBarber = &model.Barber{
+		BarberID:    dbBarber.BarberID,
+		ShopID:      dbBarber.ShopID,
+		UserName:    dbBarber.UserName,
+		Password:    dbBarber.Password,
+		FirstName:   dbBarber.FirstName,
+		LastName:    dbBarber.LastName,
+		PhoneNumber: dbBarber.PhoneNumber,
+		Gender:      dbBarber.Gender,
+		Dob:         dbBarber.Dob,
+		HireDate:    dbBarber.HireDate,
+		DismissDate: dbBarber.DismissDate,
+		SeatNum:     dbBarber.SeatNum}
+	return resultBarber, nil
 }
 
 func (r *queryResolver) Response(ctx context.Context) (*model.Response, error) {

@@ -9,6 +9,8 @@ type Mutation {
 }
 type Query{
   getAllBarbers: [Barber!]!
+  # Maybe make getBarber more general! input^
+  getBarberByID(id: Int!): Barber!
   response: Response
 }
 type Response{

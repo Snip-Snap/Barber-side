@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Barber represents a barber in a barbershop.
 type Barber struct {
 	BarberID    string
 	ShopID      int
@@ -22,6 +23,7 @@ type Barber struct {
 	SeatNum     int
 }
 
+// SaveOne inserts a specified new barber into the DB.
 func (barber Barber) SaveOne() {
 	insertBarber := "insert into barber (shopid, userName, hashedpassword," +
 		"firstName, lastName, phonenumber, dob, gender, hiredate," +
@@ -47,7 +49,7 @@ func (barber Barber) SaveOne() {
 
 }
 
-// No receivers (parameters) so no func () GetAll() []Barber
+// GetAll selects all barbers from DB and returns them to resolver.
 func GetAll() []Barber {
 	getAllBarbers := "select * from barber"
 	stmt, err := database.Db.Prepare(getAllBarbers)
@@ -80,5 +82,33 @@ func GetAll() []Barber {
 	}
 
 	return barbers
+
+}
+
+// Get selects a specified barber via its ID.
+func (barber Barber) Get() Barber {
+	selectBarber := "select * from barber where barberid = $1"
+	stmt, err := database.Db.Prepare(selectBarber)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	row, err := stmt.Query(barber.BarberID)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer row.Close()
+
+	row.Next()
+	err = row.Scan(&barber.BarberID, &barber.ShopID, &barber.UserName,
+		&barber.Password, &barber.FirstName, &barber.LastName,
+		&barber.PhoneNumber, &barber.Gender, &barber.Dob, &barber.HireDate,
+		&barber.DismissDate, &barber.SeatNum)
+	if err = row.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	return barber
 
 }
