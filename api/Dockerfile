@@ -17,7 +17,7 @@ RUN go build
 
 #expose this port bc we the server runs on
 #port 8081
-EXPOSE 8081
+EXPOSE 69
 
 #docker will start the server when the 
 #container starts 

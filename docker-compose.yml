@@ -1,7 +1,7 @@
 version: '3.3'
 
 services:
-    gql-api:
+    fernando-gql-api:
         build: ./api
         #these files are mounted inside 
         #the docker container 
@@ -12,7 +12,7 @@ services:
             #look into swarming for /run/secrets
             - ./../dbcreds.config:/run/secrets
         ports:
-            - 8081:8081
+            - 69:69
 
 #run with docker-compose up -d
 #to start api in the background of docker

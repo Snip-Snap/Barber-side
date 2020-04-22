@@ -13,7 +13,7 @@ import (
 	"github.com/99designs/gqlgen/handler"
 )
 
-const defaultPort = "8081"
+const defaultPort = "69"
 
 func main() {
 	port := os.Getenv("PORT")
