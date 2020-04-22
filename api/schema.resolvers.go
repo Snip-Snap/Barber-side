@@ -10,27 +10,6 @@ import (
 	"context"
 )
 
-func (r *mutationResolver) SignupClient(ctx context.Context, input model.NewClient) (*model.Response, error) {
-	// print("here\n")
-	// statement, err := Db.Prepare("insert into client (fullname, gender, phonenumber, username, hashedpassword) values($1, $2, $3, $4, $5)")
-	// CheckError(err)
-	// print("here\n")
-	// //TODO: Check inputs for uniqueness and appropriate characters.
-	// // pw := string(input.Password)
-	// hash, err := bcrypt.GenerateFromPassword([]byte(input.Password),
-	// 	bcrypt.DefaultCost)
-	// CheckError(err)
-
-	// hashedInputpw := string(hash)
-	// _, err = statement.Exec(input.FullName,
-	// 	input.Gender, input.PhoneNumber, input.UserName, hashedInputpw)
-	// CheckError(err)
-
-	res := &model.Response{Error: "Okay"}
-
-	return res, nil
-}
-
 func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error) {
 	// Why doesn't barber := barber.Barber work? It can't infer its type?
 	var barber barber.Barber

@@ -58,19 +58,8 @@ type ComplexityRoot struct {
 		UserName    func(childComplexity int) int
 	}
 
-	Client struct {
-		ClientID    func(childComplexity int) int
-		FirstName   func(childComplexity int) int
-		Gender      func(childComplexity int) int
-		LastName    func(childComplexity int) int
-		Password    func(childComplexity int) int
-		PhoneNumber func(childComplexity int) int
-		UserName    func(childComplexity int) int
-	}
-
 	Mutation struct {
 		SignUpBarber func(childComplexity int, input model.NewBarber) int
-		SignupClient func(childComplexity int, input model.NewClient) int
 	}
 
 	Query struct {
@@ -85,7 +74,6 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	SignupClient(ctx context.Context, input model.NewClient) (*model.Response, error)
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
 }
 type QueryResolver interface {
@@ -193,55 +181,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Barber.UserName(childComplexity), true
 
-	case "Client.clientID":
-		if e.complexity.Client.ClientID == nil {
-			break
-		}
-
-		return e.complexity.Client.ClientID(childComplexity), true
-
-	case "Client.firstName":
-		if e.complexity.Client.FirstName == nil {
-			break
-		}
-
-		return e.complexity.Client.FirstName(childComplexity), true
-
-	case "Client.gender":
-		if e.complexity.Client.Gender == nil {
-			break
-		}
-
-		return e.complexity.Client.Gender(childComplexity), true
-
-	case "Client.lastName":
-		if e.complexity.Client.LastName == nil {
-			break
-		}
-
-		return e.complexity.Client.LastName(childComplexity), true
-
-	case "Client.password":
-		if e.complexity.Client.Password == nil {
-			break
-		}
-
-		return e.complexity.Client.Password(childComplexity), true
-
-	case "Client.phoneNumber":
-		if e.complexity.Client.PhoneNumber == nil {
-			break
-		}
-
-		return e.complexity.Client.PhoneNumber(childComplexity), true
-
-	case "Client.userName":
-		if e.complexity.Client.UserName == nil {
-			break
-		}
-
-		return e.complexity.Client.UserName(childComplexity), true
-
 	case "Mutation.signUpBarber":
 		if e.complexity.Mutation.SignUpBarber == nil {
 			break
@@ -253,18 +192,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.SignUpBarber(childComplexity, args["input"].(model.NewBarber)), true
-
-	case "Mutation.signupClient":
-		if e.complexity.Mutation.SignupClient == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_signupClient_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SignupClient(childComplexity, args["input"].(model.NewClient)), true
 
 	case "Query.getAllBarbers":
 		if e.complexity.Query.GetAllBarbers == nil {
@@ -368,8 +295,6 @@ var sources = []*ast.Source{
 # https://gqlgen.com/getting-started/
 
 type Mutation {
-  # Client is return type. Will need to be changed in future. Return hashtoken?
-  signupClient(input: NewClient!) : Response
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
@@ -381,7 +306,6 @@ type Query{
 type Response{
   error:        String!
 }
-
 
 input NewBarber{
   shopID:       Int!
@@ -395,24 +319,6 @@ input NewBarber{
   hireDate:     String!
   dismissDate:  String
   seatNum:      Int!
-}
-
-input NewClient {
-  userName:       String!
-  password:       String!
-  fullName:       String!
-  gender:         Boolean
-  phoneNumber:    String!
-}
-
-type Client {
-  clientID:       ID!
-  userName:       String!
-  password:       String!
-  firstName:      String!
-  lastName:       String!
-  phoneNumber:    String!
-  gender:         Boolean
 }
 
 # hireDate and dismissDate type may need to be modified
@@ -445,20 +351,6 @@ func (ec *executionContext) field_Mutation_signUpBarber_args(ctx context.Context
 	var arg0 model.NewBarber
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_signupClient_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.NewClient
-	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewClient2apiᚋmodelᚐNewClient(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -931,279 +823,6 @@ func (ec *executionContext) _Barber_seatNum(ctx context.Context, field graphql.C
 	res := resTmp.(int)
 	fc.Result = res
 	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_clientID(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.ClientID, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNID2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_userName(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UserName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_password(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Password, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_firstName(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FirstName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_lastName(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.LastName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_phoneNumber(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.PhoneNumber, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Client_gender(ctx context.Context, field graphql.CollectedField, obj *model.Client) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Client",
-		Field:    field,
-		Args:     nil,
-		IsMethod: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Gender, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*bool)
-	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_signupClient(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_signupClient_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().SignupClient(rctx, args["input"].(model.NewClient))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Response)
-	fc.Result = res
-	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_signUpBarber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2586,48 +2205,6 @@ func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj int
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputNewClient(ctx context.Context, obj interface{}) (model.NewClient, error) {
-	var it model.NewClient
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "userName":
-			var err error
-			it.UserName, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "password":
-			var err error
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "fullName":
-			var err error
-			it.FullName, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "gender":
-			var err error
-			it.Gender, err = ec.unmarshalOBoolean2ᚖbool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "phoneNumber":
-			var err error
-			it.PhoneNumber, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2712,60 +2289,6 @@ func (ec *executionContext) _Barber(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
-var clientImplementors = []string{"Client"}
-
-func (ec *executionContext) _Client(ctx context.Context, sel ast.SelectionSet, obj *model.Client) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, clientImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Client")
-		case "clientID":
-			out.Values[i] = ec._Client_clientID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "userName":
-			out.Values[i] = ec._Client_userName(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "password":
-			out.Values[i] = ec._Client_password(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "firstName":
-			out.Values[i] = ec._Client_firstName(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "lastName":
-			out.Values[i] = ec._Client_lastName(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "phoneNumber":
-			out.Values[i] = ec._Client_phoneNumber(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "gender":
-			out.Values[i] = ec._Client_gender(ctx, field, obj)
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2781,8 +2304,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "signupClient":
-			out.Values[i] = ec._Mutation_signupClient(ctx, field)
 		case "signUpBarber":
 			out.Values[i] = ec._Mutation_signUpBarber(ctx, field)
 		default:
@@ -3232,10 +2753,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 
 func (ec *executionContext) unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
 	return ec.unmarshalInputNewBarber(ctx, v)
-}
-
-func (ec *executionContext) unmarshalNNewClient2apiᚋmodelᚐNewClient(ctx context.Context, v interface{}) (model.NewClient, error) {
-	return ec.unmarshalInputNewClient(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

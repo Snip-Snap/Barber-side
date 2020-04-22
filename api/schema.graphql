@@ -3,8 +3,6 @@
 # https://gqlgen.com/getting-started/
 
 type Mutation {
-  # Client is return type. Will need to be changed in future. Return hashtoken?
-  signupClient(input: NewClient!) : Response
   signUpBarber(input: NewBarber!): Response
 }
 type Query{
@@ -16,7 +14,6 @@ type Query{
 type Response{
   error:        String!
 }
-
 
 input NewBarber{
   shopID:       Int!
@@ -30,24 +27,6 @@ input NewBarber{
   hireDate:     String!
   dismissDate:  String
   seatNum:      Int!
-}
-
-input NewClient {
-  userName:       String!
-  password:       String!
-  fullName:       String!
-  gender:         Boolean
-  phoneNumber:    String!
-}
-
-type Client {
-  clientID:       ID!
-  userName:       String!
-  password:       String!
-  firstName:      String!
-  lastName:       String!
-  phoneNumber:    String!
-  gender:         Boolean
 }
 
 # hireDate and dismissDate type may need to be modified

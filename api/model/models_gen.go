@@ -17,16 +17,6 @@ type Barber struct {
 	SeatNum     int     `json:"seatNum"`
 }
 
-type Client struct {
-	ClientID    string `json:"clientID"`
-	UserName    string `json:"userName"`
-	Password    string `json:"password"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	PhoneNumber string `json:"phoneNumber"`
-	Gender      *bool  `json:"gender"`
-}
-
 type NewBarber struct {
 	ShopID      int     `json:"shopID"`
 	UserName    string  `json:"userName"`
@@ -39,14 +29,6 @@ type NewBarber struct {
 	HireDate    string  `json:"hireDate"`
 	DismissDate *string `json:"dismissDate"`
 	SeatNum     int     `json:"seatNum"`
-}
-
-type NewClient struct {
-	UserName    string `json:"userName"`
-	Password    string `json:"password"`
-	FullName    string `json:"fullName"`
-	Gender      *bool  `json:"gender"`
-	PhoneNumber string `json:"phoneNumber"`
 }
 
 type Response struct {
