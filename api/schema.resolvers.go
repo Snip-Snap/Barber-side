@@ -4,10 +4,10 @@ package api
 // will be copied through when generating and any unknown code will be moved to the end.
 
 import (
+	"api/generated"
+	"api/internal/barber"
+	"api/model"
 	"context"
-	"graphqltest/api/generated"
-	"graphqltest/api/internal/barber"
-	"graphqltest/api/model"
 )
 
 func (r *mutationResolver) SignupClient(ctx context.Context, input model.NewClient) (*model.Response, error) {

@@ -6,14 +6,14 @@ import (
 	"net/http"
 	"os"
 
-	"graphqltest/api"
-	"graphqltest/api/generated"
-	"graphqltest/api/internal/database"
+	"api"
+	"api/generated"
+	"api/internal/database"
 
 	"github.com/99designs/gqlgen/handler"
 )
 
-const defaultPort = "8080"
+const defaultPort = "8081"
 
 func main() {
 	port := os.Getenv("PORT")

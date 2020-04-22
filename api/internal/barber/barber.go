@@ -1,9 +1,9 @@
 package barber
 
 import (
+	"api/internal/database"
 	"database/sql"
 	"fmt"
-	"graphqltest/api/internal/database"
 	"log"
 
 	"golang.org/x/crypto/bcrypt"

@@ -1,4 +1,4 @@
-module graphqltest
+module api
 
 go 1.13
 

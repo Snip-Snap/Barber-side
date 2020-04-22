@@ -1,4 +1,4 @@
-FROM golang:1.13.6-alpine3.11
+FROM golang:1.14.2-alpine3.11
 
 #create a file
 RUN mkdir /app
@@ -16,8 +16,8 @@ RUN go mod download
 RUN go build 
 
 #expose this port bc we the server runs on
-#port 8080
-EXPOSE 8080
+#port 8081
+EXPOSE 8081
 
 #docker will start the server when the 
 #container starts 

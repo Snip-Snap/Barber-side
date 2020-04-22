@@ -3,10 +3,10 @@
 package generated
 
 import (
+	"api/model"
 	"bytes"
 	"context"
 	"errors"
-	"graphqltest/api/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -363,7 +363,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "api/schema.graphql", Input: `# GraphQL schema example
+	&ast.Source{Name: "schema.graphql", Input: `# GraphQL schema example
 #
 # https://gqlgen.com/getting-started/
 
@@ -444,7 +444,7 @@ func (ec *executionContext) field_Mutation_signUpBarber_args(ctx context.Context
 	args := map[string]interface{}{}
 	var arg0 model.NewBarber
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewBarber2graphqltestᚋapiᚋmodelᚐNewBarber(ctx, tmp)
+		arg0, err = ec.unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -458,7 +458,7 @@ func (ec *executionContext) field_Mutation_signupClient_args(ctx context.Context
 	args := map[string]interface{}{}
 	var arg0 model.NewClient
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNNewClient2graphqltestᚋapiᚋmodelᚐNewClient(ctx, tmp)
+		arg0, err = ec.unmarshalNNewClient2apiᚋmodelᚐNewClient(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1203,7 +1203,7 @@ func (ec *executionContext) _Mutation_signupClient(ctx context.Context, field gr
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_signUpBarber(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1241,7 +1241,7 @@ func (ec *executionContext) _Mutation_signUpBarber(ctx context.Context, field gr
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1275,7 +1275,7 @@ func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field grap
 	}
 	res := resTmp.([]*model.Barber)
 	fc.Result = res
-	return ec.marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBarberᚄ(ctx, field.Selections, res)
+	return ec.marshalNBarber2ᚕᚖapiᚋmodelᚐBarberᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1316,7 +1316,7 @@ func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field grap
 	}
 	res := resTmp.(*model.Barber)
 	fc.Result = res
-	return ec.marshalNBarber2ᚖgraphqltestᚋapiᚋmodelᚐBarber(ctx, field.Selections, res)
+	return ec.marshalNBarber2ᚖapiᚋmodelᚐBarber(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_response(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1347,7 +1347,7 @@ func (ec *executionContext) _Query_response(ctx context.Context, field graphql.C
 	}
 	res := resTmp.(*model.Response)
 	fc.Result = res
-	return ec.marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx, field.Selections, res)
+	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3137,11 +3137,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNBarber2graphqltestᚋapiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v model.Barber) graphql.Marshaler {
+func (ec *executionContext) marshalNBarber2apiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v model.Barber) graphql.Marshaler {
 	return ec._Barber(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBarberᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Barber) graphql.Marshaler {
+func (ec *executionContext) marshalNBarber2ᚕᚖapiᚋmodelᚐBarberᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Barber) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3165,7 +3165,7 @@ func (ec *executionContext) marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBar
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNBarber2ᚖgraphqltestᚋapiᚋmodelᚐBarber(ctx, sel, v[i])
+			ret[i] = ec.marshalNBarber2ᚖapiᚋmodelᚐBarber(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3178,7 +3178,7 @@ func (ec *executionContext) marshalNBarber2ᚕᚖgraphqltestᚋapiᚋmodelᚐBar
 	return ret
 }
 
-func (ec *executionContext) marshalNBarber2ᚖgraphqltestᚋapiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v *model.Barber) graphql.Marshaler {
+func (ec *executionContext) marshalNBarber2ᚖapiᚋmodelᚐBarber(ctx context.Context, sel ast.SelectionSet, v *model.Barber) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3230,11 +3230,11 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNNewBarber2graphqltestᚋapiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
+func (ec *executionContext) unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
 	return ec.unmarshalInputNewBarber(ctx, v)
 }
 
-func (ec *executionContext) unmarshalNNewClient2graphqltestᚋapiᚋmodelᚐNewClient(ctx context.Context, v interface{}) (model.NewClient, error) {
+func (ec *executionContext) unmarshalNNewClient2apiᚋmodelᚐNewClient(ctx context.Context, v interface{}) (model.NewClient, error) {
 	return ec.unmarshalInputNewClient(ctx, v)
 }
 
@@ -3501,11 +3501,11 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return ec.marshalOBoolean2bool(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalOResponse2graphqltestᚋapiᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v model.Response) graphql.Marshaler {
+func (ec *executionContext) marshalOResponse2apiᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v model.Response) graphql.Marshaler {
 	return ec._Response(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOResponse2ᚖgraphqltestᚋapiᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v *model.Response) graphql.Marshaler {
+func (ec *executionContext) marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx context.Context, sel ast.SelectionSet, v *model.Response) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
