@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetAllBarbers func(childComplexity int) int
-		GetBarberByID func(childComplexity int, id int) int
+		GetBarberByID func(childComplexity int, id string) int
 		Response      func(childComplexity int) int
 	}
 
@@ -90,7 +90,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
-	GetBarberByID(ctx context.Context, id int) (*model.Barber, error)
+	GetBarberByID(ctx context.Context, id string) (*model.Barber, error)
 	Response(ctx context.Context) (*model.Response, error)
 }
 
@@ -283,7 +283,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetBarberByID(childComplexity, args["id"].(int)), true
+		return e.complexity.Query.GetBarberByID(childComplexity, args["id"].(string)), true
 
 	case "Query.response":
 		if e.complexity.Query.Response == nil {
@@ -375,7 +375,7 @@ type Mutation {
 type Query{
   getAllBarbers: [Barber!]!
   # Maybe make getBarber more general! input^
-  getBarberByID(id: Int!): Barber!
+  getBarberByID(id: ID!): Barber!
   response: Response
 }
 type Response{
@@ -484,9 +484,9 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getBarberByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 int
+	var arg0 string
 	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1302,7 +1302,7 @@ func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetBarberByID(rctx, args["id"].(int))
+		return ec.resolvers.Query().GetBarberByID(rctx, args["id"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

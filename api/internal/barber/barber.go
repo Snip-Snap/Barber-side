@@ -1,6 +1,8 @@
 package barber
 
 import (
+	"database/sql"
+	"fmt"
 	"graphqltest/api/internal/database"
 	"log"
 
@@ -85,30 +87,23 @@ func GetAll() []Barber {
 
 }
 
-// Get selects a specified barber via its ID.
-func (barber Barber) Get() Barber {
+// Get selects a specified barber via its ID and modifies the param barber.
+func (barber *Barber) Get() {
 	selectBarber := "select * from barber where barberid = $1"
-	stmt, err := database.Db.Prepare(selectBarber)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer stmt.Close()
 
-	row, err := stmt.Query(barber.BarberID)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer row.Close()
+	row := database.Db.QueryRow(selectBarber, barber.BarberID)
 
-	row.Next()
-	err = row.Scan(&barber.BarberID, &barber.ShopID, &barber.UserName,
+	// var newBarber Barber
+	err := row.Scan(&barber.BarberID, &barber.ShopID, &barber.UserName,
 		&barber.Password, &barber.FirstName, &barber.LastName,
-		&barber.PhoneNumber, &barber.Gender, &barber.Dob, &barber.HireDate,
-		&barber.DismissDate, &barber.SeatNum)
-	if err = row.Err(); err != nil {
-		log.Fatal(err)
+		&barber.PhoneNumber, &barber.Gender, &barber.Dob,
+		&barber.HireDate, &barber.DismissDate, &barber.SeatNum)
+	switch err {
+	case sql.ErrNoRows:
+		fmt.Println("No rows were returned.")
+	case nil:
+		fmt.Println(barber.BarberID, barber.FirstName)
+	default:
+		panic(err)
 	}
-
-	return barber
-
 }
