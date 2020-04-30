@@ -25,9 +25,13 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarb
 	barber.DismissDate = input.DismissDate
 	barber.SeatNum = input.SeatNum
 
-	barber.SaveOne()
+	if err := barber.SaveOne(); err != nil {
+		res := &model.Response{Error: "Error in SaveOne()."}
+		// Figure out how to return an error.
+		return res, err
+	}
 
-	res := &model.Response{Error: "Error message"}
+	res := &model.Response{Error: "Barber inserted."}
 
 	return res, nil
 }
@@ -36,7 +40,10 @@ func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, err
 	var resultBarbers []*model.Barber
 	var dbBarbers []barber.Barber
 
-	dbBarbers = barber.GetAll()
+	dbBarbers, err := barber.GetAll()
+	if err != nil {
+		return nil, err
+	}
 
 	for _, barber := range dbBarbers {
 		resultBarbers = append(resultBarbers, &model.Barber{
@@ -62,7 +69,9 @@ func (r *queryResolver) GetBarberByID(ctx context.Context, id string) (*model.Ba
 	var dbBarber barber.Barber
 
 	dbBarber.BarberID = id
-	dbBarber.Get()
+	if err := dbBarber.Get(); err != nil {
+		return nil, err
+	}
 
 	resultBarber = &model.Barber{
 		BarberID:    dbBarber.BarberID,
