@@ -10,7 +10,6 @@ import (
 	"api/jwt"
 	"api/model"
 	"context"
-	"fmt"
 )
 
 func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error) {
@@ -58,7 +57,18 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 }
 
 func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (*model.Response, error) {
-	panic(fmt.Errorf("not implemented"))
+	username, err := jwt.ParseToken(input.Token)
+	if err != nil {
+		res := &model.Response{Response: "", Error: "Access Denied"}
+		return res, err
+	}
+	token, err := jwt.GenerateToken(username)
+	if err != nil {
+		res := &model.Response{Response: "", Error: "Error Generating token"}
+		return res, err
+	}
+	res := &model.Response{Response: token, Error: ""}
+	return res, nil
 }
 
 func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, error) {
