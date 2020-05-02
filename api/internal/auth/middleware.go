@@ -22,7 +22,8 @@ func Middleware() func(http.Handler) http.Handler {
 			// Is this 'finding' a cookie with key words token?
 			c, err := r.Cookie("token")
 
-			// Allow unauthenticated users in
+			// Allow unauthenticated users some initial access to our api.
+			// Has no authentication context
 			if err != nil || c == nil {
 				next.ServeHTTP(w, r)
 				return
@@ -36,10 +37,10 @@ func Middleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			dbBarber := barber.Barber{UserName: username}
 			// GetBarberIDByUsername is a method of the package barber. It's diff.
 			// from SaveOne() and Get() because those are directly connected
 			// to the structure being passed as parameters.
+			dbBarber := barber.Barber{UserName: username}
 			id, err := barber.GetBarberIDByUsername(username)
 			if err != nil {
 				next.ServeHTTP(w, r)

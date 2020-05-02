@@ -36,6 +36,11 @@ type NewBarber struct {
 	SeatNum     int     `json:"seatNum"`
 }
 
+type RefreshTokenInput struct {
+	Token string `json:"token"`
+}
+
 type Response struct {
-	Error string `json:"error"`
+	Response string `json:"response"`
+	Error    string `json:"error"`
 }

@@ -60,28 +60,29 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		Login        func(childComplexity int, input model.Login) int
+		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
 		SignUpBarber func(childComplexity int, input model.NewBarber) int
 	}
 
 	Query struct {
 		GetAllBarbers func(childComplexity int) int
 		GetBarberByID func(childComplexity int, id string) int
-		Response      func(childComplexity int) int
 	}
 
 	Response struct {
-		Error func(childComplexity int) int
+		Error    func(childComplexity int) int
+		Response func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
 	Login(ctx context.Context, input model.Login) (*model.Response, error)
+	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (*model.Response, error)
 }
 type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
 	GetBarberByID(ctx context.Context, id string) (*model.Barber, error)
-	Response(ctx context.Context) (*model.Response, error)
 }
 
 type executableSchema struct {
@@ -195,6 +196,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
 
+	case "Mutation.refreshToken":
+		if e.complexity.Mutation.RefreshToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_refreshToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RefreshToken(childComplexity, args["input"].(model.RefreshTokenInput)), true
+
 	case "Mutation.signUpBarber":
 		if e.complexity.Mutation.SignUpBarber == nil {
 			break
@@ -226,19 +239,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetBarberByID(childComplexity, args["id"].(string)), true
 
-	case "Query.response":
-		if e.complexity.Query.Response == nil {
-			break
-		}
-
-		return e.complexity.Query.Response(childComplexity), true
-
 	case "Response.error":
 		if e.complexity.Response.Error == nil {
 			break
 		}
 
 		return e.complexity.Response.Error(childComplexity), true
+
+	case "Response.response":
+		if e.complexity.Response.Response == nil {
+			break
+		}
+
+		return e.complexity.Response.Response(childComplexity), true
 
 	}
 	return 0, false
@@ -311,16 +324,32 @@ var sources = []*ast.Source{
 type Mutation {
   signUpBarber(input: NewBarber!): Response
   login(input: Login!): Response
+  refreshToken(input: RefreshTokenInput!): Response
 }
 
 type Query{
   getAllBarbers: [Barber!]!
   # Maybe make getBarber more general! input^
   getBarberByID(id: ID!): Barber!
-  response: Response
 }
 type Response{
+  response:     String!
   error:        String!
+}
+
+type Barber{
+  barberID:     ID!
+  shopID:       Int!
+  userName:     String!
+  password:     String!
+  firstName:    String!
+  lastName:     String!
+  PhoneNumber:  String!
+  gender:       String
+  dob:          String!
+  hireDate:     String!
+  dismissDate:  String
+  seatNum:      Int!
 }
 
 # input types are like passing in whole objects. Used in mutations and stuff.
@@ -343,21 +372,9 @@ input Login {
   password: String!
 }
 
-type Barber{
-  barberID:     ID!
-  shopID:       Int!
-  userName:     String!
-  password:     String!
-  firstName:    String!
-  lastName:     String!
-  PhoneNumber:  String!
-  gender:       String
-  dob:          String!
-  hireDate:     String!
-  dismissDate:  String
-  seatNum:      Int!
+input RefreshTokenInput {
+  token: String!
 }
-
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -372,6 +389,20 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	var arg0 model.Login
 	if tmp, ok := rawArgs["input"]; ok {
 		arg0, err = ec.unmarshalNLogin2apiᚋmodelᚐLogin(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_refreshToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.RefreshTokenInput
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNRefreshTokenInput2apiᚋmodelᚐRefreshTokenInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -936,6 +967,44 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_refreshToken_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RefreshToken(rctx, args["input"].(model.RefreshTokenInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Response)
+	fc.Result = res
+	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1011,37 +1080,6 @@ func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field grap
 	return ec.marshalNBarber2ᚖapiᚋmodelᚐBarber(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_response(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:   "Query",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Response(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*model.Response)
-	fc.Result = res
-	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1109,6 +1147,40 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Response_response(ctx context.Context, field graphql.CollectedField, obj *model.Response) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Response",
+		Field:    field,
+		Args:     nil,
+		IsMethod: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Response, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Response_error(ctx context.Context, field graphql.CollectedField, obj *model.Response) (ret graphql.Marshaler) {
@@ -2302,6 +2374,24 @@ func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj int
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context, obj interface{}) (model.RefreshTokenInput, error) {
+	var it model.RefreshTokenInput
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "token":
+			var err error
+			it.Token, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2405,6 +2495,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_signUpBarber(ctx, field)
 		case "login":
 			out.Values[i] = ec._Mutation_login(ctx, field)
+		case "refreshToken":
+			out.Values[i] = ec._Mutation_refreshToken(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2459,17 +2551,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "response":
-			field := field
-			out.Concurrently(i, func() (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_response(ctx, field)
-				return res
-			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
@@ -2496,6 +2577,11 @@ func (ec *executionContext) _Response(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Response")
+		case "response":
+			out.Values[i] = ec._Response_response(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "error":
 			out.Values[i] = ec._Response_error(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2856,6 +2942,10 @@ func (ec *executionContext) unmarshalNLogin2apiᚋmodelᚐLogin(ctx context.Cont
 
 func (ec *executionContext) unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
 	return ec.unmarshalInputNewBarber(ctx, v)
+}
+
+func (ec *executionContext) unmarshalNRefreshTokenInput2apiᚋmodelᚐRefreshTokenInput(ctx context.Context, v interface{}) (model.RefreshTokenInput, error) {
+	return ec.unmarshalInputRefreshTokenInput(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

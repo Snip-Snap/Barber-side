@@ -10,6 +10,7 @@ import (
 	"api/jwt"
 	"api/model"
 	"context"
+	"fmt"
 )
 
 func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error) {
@@ -28,12 +29,12 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarb
 	barber.SeatNum = input.SeatNum
 
 	if err := barber.SaveOne(); err != nil {
-		res := &model.Response{Error: "Error in SaveOne()."}
+		res := &model.Response{Response: "", Error: "Error in SaveOne()."}
 		// Figure out how to return an error.
 		return res, err
 	}
 
-	res := &model.Response{Error: "Barber inserted."}
+	res := &model.Response{Response: "Barber inserted", Error: ""}
 
 	return res, nil
 }
@@ -44,17 +45,20 @@ func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model
 	barber.UserName = input.Username
 	barber.Password = input.Password
 	if kosher := barber.Authenticate(); !kosher {
-		res := &model.Response{Error: "Authentication error."}
+		res := &model.Response{Response: "", Error: "Authentication error."}
 		return res, &methods.WrongUsernameOrPasswordError{}
 	}
 	token, err := jwt.GenerateToken(barber.UserName)
 	if err != nil {
-		res := &model.Response{Error: "Error generating token"}
+		res := &model.Response{Response: "", Error: "Error generating token"}
 		return res, err
 	}
-	res := &model.Response{Error: token}
+	res := &model.Response{Response: token, Error: ""}
 	return res, nil
+}
 
+func (r *mutationResolver) RefreshToken(ctx context.Context, input model.RefreshTokenInput) (*model.Response, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, error) {
@@ -108,11 +112,6 @@ func (r *queryResolver) GetBarberByID(ctx context.Context, id string) (*model.Ba
 		DismissDate: dbBarber.DismissDate,
 		SeatNum:     dbBarber.SeatNum}
 	return resultBarber, nil
-}
-
-func (r *queryResolver) Response(ctx context.Context) (*model.Response, error) {
-	res := &model.Response{Error: "nothing here"}
-	return res, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
