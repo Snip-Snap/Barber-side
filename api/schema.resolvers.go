@@ -6,6 +6,8 @@ package api
 import (
 	"api/generated"
 	"api/internal/barber"
+	"api/internal/methods"
+	"api/jwt"
 	"api/model"
 	"context"
 )
@@ -34,6 +36,25 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarb
 	res := &model.Response{Error: "Barber inserted."}
 
 	return res, nil
+}
+
+func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Response, error) {
+	var barber barber.Barber
+
+	barber.UserName = input.Username
+	barber.Password = input.Password
+	if kosher := barber.Authenticate(); !kosher {
+		res := &model.Response{Error: "Authentication error."}
+		return res, &methods.WrongUsernameOrPasswordError{}
+	}
+	token, err := jwt.GenerateToken(barber.UserName)
+	if err != nil {
+		res := &model.Response{Error: "Error generating token"}
+		return res, err
+	}
+	res := &model.Response{Error: token}
+	return res, nil
+
 }
 
 func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, error) {

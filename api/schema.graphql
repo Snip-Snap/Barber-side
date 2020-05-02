@@ -4,7 +4,9 @@
 
 type Mutation {
   signUpBarber(input: NewBarber!): Response
+  login(input: Login!): Response
 }
+
 type Query{
   getAllBarbers: [Barber!]!
   # Maybe make getBarber more general! input^
@@ -15,6 +17,7 @@ type Response{
   error:        String!
 }
 
+# input types are like passing in whole objects. Used in mutations and stuff.
 input NewBarber{
   shopID:       Int!
   userName:     String!
@@ -29,7 +32,11 @@ input NewBarber{
   seatNum:      Int!
 }
 
-# hireDate and dismissDate type may need to be modified
+input Login {
+  username: String!
+  password: String!
+}
+
 type Barber{
   barberID:     ID!
   shopID:       Int!

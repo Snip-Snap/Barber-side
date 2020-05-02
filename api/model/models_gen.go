@@ -17,6 +17,11 @@ type Barber struct {
 	SeatNum     int     `json:"seatNum"`
 }
 
+type Login struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type NewBarber struct {
 	ShopID      int     `json:"shopID"`
 	UserName    string  `json:"userName"`

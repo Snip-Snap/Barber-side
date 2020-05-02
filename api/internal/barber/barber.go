@@ -5,6 +5,7 @@ import (
 	"api/internal/methods"
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 // Barber represents a barber in a barbershop.
@@ -103,9 +104,57 @@ func (barber *Barber) Get() error {
 	case sql.ErrNoRows:
 		fmt.Println("No rows were returned.")
 	case nil:
-		fmt.Println(barber.BarberID, barber.FirstName)
+		// fmt.Println(barber.BarberID, barber.FirstName)
 	default:
 		return err
 	}
 	return nil
+}
+
+// GetBarberIDByUsername will return the id of the barber if it's found
+// in the db via its username. Otherwise, it will return -1 when an error is
+// encountered. Will return 0 if username not found in db.
+func GetBarberIDByUsername(username string) (int, error) {
+	getBarberID := "select id from barber where userName = $1"
+
+	stmt, err := database.Db.Prepare(getBarberID)
+	if err != nil {
+		return -1, err
+	}
+
+	row := stmt.QueryRow(username)
+
+	var ID int
+	err = row.Scan(&ID)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return -1, err
+		}
+		return 0, err
+	}
+
+	return ID, nil
+}
+
+// Authenticate checks whether the inputBarber's raw password matches the
+// Hashed password in the database's matching username.
+func (barber *Barber) Authenticate() bool {
+	getHashedPW := "select hashedpassword from barber WHERE username = $1"
+	stmt, err := database.Db.Prepare(getHashedPW)
+	if err != nil {
+		log.Fatal(err)
+	}
+	row := stmt.QueryRow(barber.UserName)
+
+	var hashedPW string
+	err = row.Scan(&hashedPW)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false
+		} else {
+			log.Fatal(err)
+		}
+	}
+
+	return methods.CheckPasswordHash(barber.Password, hashedPW)
 }

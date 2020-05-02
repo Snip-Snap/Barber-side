@@ -19,3 +19,16 @@ func HashPassword(rawPassword string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(rawPassword), cost)
 	return string(bytes), err
 }
+
+//CheckPasswordHash compares raw password with it's hashed values
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
+}
+
+// WrongUsernameOrPasswordError is used to deal with authentication erros.
+type WrongUsernameOrPasswordError struct{}
+
+func (m *WrongUsernameOrPasswordError) Error() string {
+	return "wrong username or password"
+}

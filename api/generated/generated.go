@@ -59,6 +59,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		Login        func(childComplexity int, input model.Login) int
 		SignUpBarber func(childComplexity int, input model.NewBarber) int
 	}
 
@@ -75,6 +76,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
+	Login(ctx context.Context, input model.Login) (*model.Response, error)
 }
 type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
@@ -180,6 +182,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Barber.UserName(childComplexity), true
+
+	case "Mutation.login":
+		if e.complexity.Mutation.Login == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
 
 	case "Mutation.signUpBarber":
 		if e.complexity.Mutation.SignUpBarber == nil {
@@ -296,7 +310,9 @@ var sources = []*ast.Source{
 
 type Mutation {
   signUpBarber(input: NewBarber!): Response
+  login(input: Login!): Response
 }
+
 type Query{
   getAllBarbers: [Barber!]!
   # Maybe make getBarber more general! input^
@@ -307,6 +323,7 @@ type Response{
   error:        String!
 }
 
+# input types are like passing in whole objects. Used in mutations and stuff.
 input NewBarber{
   shopID:       Int!
   userName:     String!
@@ -321,7 +338,11 @@ input NewBarber{
   seatNum:      Int!
 }
 
-# hireDate and dismissDate type may need to be modified
+input Login {
+  username: String!
+  password: String!
+}
+
 type Barber{
   barberID:     ID!
   shopID:       Int!
@@ -344,6 +365,20 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Login
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNLogin2apiᚋmodelᚐLogin(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_signUpBarber_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -850,6 +885,44 @@ func (ec *executionContext) _Mutation_signUpBarber(ctx context.Context, field gr
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().SignUpBarber(rctx, args["input"].(model.NewBarber))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Response)
+	fc.Result = res
+	return ec.marshalOResponse2ᚖapiᚋmodelᚐResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_login_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.Login))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2127,6 +2200,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interface{}) (model.Login, error) {
+	var it model.Login
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj interface{}) (model.NewBarber, error) {
 	var it model.NewBarber
 	var asMap = obj.(map[string]interface{})
@@ -2306,6 +2403,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "signUpBarber":
 			out.Values[i] = ec._Mutation_signUpBarber(ctx, field)
+		case "login":
+			out.Values[i] = ec._Mutation_login(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2749,6 +2848,10 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNLogin2apiᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
+	return ec.unmarshalInputLogin(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
