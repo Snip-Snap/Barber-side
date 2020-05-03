@@ -4,11 +4,13 @@ import (
 	"log"
 	"time"
 
+	"github.com/dchest/uniuri"
 	"github.com/dgrijalva/jwt-go"
 )
 
 var (
-	SecretKey = []byte("secret")
+	// SecretKey is used.
+	SecretKey = []byte(uniuri.NewLen(64))
 )
 
 // GenerateToken generates a jwt token and assign a username to its claims.
@@ -31,6 +33,9 @@ func ParseToken(tokenStr string) (string, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return SecretKey, nil
 	})
+	if err != nil {
+		return "", err
+	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		username := claims["username"].(string)
 		return username, nil

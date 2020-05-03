@@ -115,7 +115,7 @@ func (barber *Barber) Get() error {
 // in the db via its username. Otherwise, it will return -1 when an error is
 // encountered. Will return 0 if username not found in db.
 func GetBarberIDByUsername(username string) (int, error) {
-	getBarberID := "select id from barber where userName = $1"
+	getBarberID := "select barberid from barber where userName = $1"
 
 	stmt, err := database.Db.Prepare(getBarberID)
 	if err != nil {

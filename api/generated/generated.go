@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -40,6 +41,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	CheckAuth func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -328,10 +330,12 @@ type Mutation {
 }
 
 type Query{
-  getAllBarbers: [Barber!]!
-  # Maybe make getBarber more general! input^
-  getBarberByID(id: ID!): Barber!
+  getAllBarbers: [Barber!]! @checkAuth
+  getBarberByID(id: ID!): Barber! @checkAuth
 }
+
+directive @checkAuth on FIELD_DEFINITION
+
 type Response{
   response:     String!
   error:        String!
@@ -1021,8 +1025,28 @@ func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field grap
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllBarbers(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetAllBarbers(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.CheckAuth == nil {
+				return nil, errors.New("directive checkAuth is not implemented")
+			}
+			return ec.directives.CheckAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.([]*model.Barber); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be []*api/model.Barber`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1062,8 +1086,28 @@ func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field grap
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetBarberByID(rctx, args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetBarberByID(rctx, args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.CheckAuth == nil {
+				return nil, errors.New("directive checkAuth is not implemented")
+			}
+			return ec.directives.CheckAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Barber); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *api/model.Barber`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -9,10 +9,12 @@ type Mutation {
 }
 
 type Query{
-  getAllBarbers: [Barber!]!
-  # Maybe make getBarber more general! input^
-  getBarberByID(id: ID!): Barber!
+  getAllBarbers: [Barber!]! @checkAuth
+  getBarberByID(id: ID!): Barber! @checkAuth
 }
+
+directive @checkAuth on FIELD_DEFINITION
+
 type Response{
   response:     String!
   error:        String!
