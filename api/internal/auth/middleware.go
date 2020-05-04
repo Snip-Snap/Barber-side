@@ -6,7 +6,6 @@ import (
 	"context"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 // How and why?
@@ -16,15 +15,15 @@ type contextKey struct {
 	name string
 }
 
-// Middleware returns a function of type http.Handler with a return of type
-// http.Handler. A callback function? Is the WHOLE thing run whenever there
-// is any request made?
+// Middleware closure.
 func Middleware() func(http.Handler) http.Handler {
+	// Inner anonymous function. next is our i:=0?
 	return func(next http.Handler) http.Handler {
+		// Inner return. w and r are to be used by next it seems.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			tokenStr := ""
 			if r != nil {
-				tokenStr = r.Header.Get("auth")
+				tokenStr = r.Header.Get("auth-token")
 			}
 
 			if tokenStr == "" {
@@ -32,7 +31,7 @@ func Middleware() func(http.Handler) http.Handler {
 				return
 			}
 
-			//Validate jwt token.
+			// Authenticate user via username.
 			username, err := jwt.ParseToken(tokenStr)
 			if err != nil {
 				log.Println(err)
@@ -42,13 +41,6 @@ func Middleware() func(http.Handler) http.Handler {
 
 			// It's not necessary to save a whole struct in the context...
 			dbBarber := barber.Barber{UserName: username}
-			id, err := barber.GetBarberIDByUsername(username)
-			if err != nil {
-				log.Println(err)
-				next.ServeHTTP(w, r)
-				return
-			}
-			dbBarber.BarberID = strconv.Itoa(id)
 
 			// Place barber object in context.
 			// ForContext returns a barber pointer, so need to pass addr of barber.

@@ -5,7 +5,7 @@
 type Mutation {
   signUpBarber(input: NewBarber!): Response
   login(input: Login!): Response
-  refreshToken(input: RefreshTokenInput!): Response
+  refreshToken(input: RefreshTokenInput!): Response @checkAuth
 }
 
 type Query{
