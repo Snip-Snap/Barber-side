@@ -38,7 +38,7 @@ func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarb
 	return res, nil
 }
 
-func (r *mutationResolver) Login(ctx context.Context, input model.Login) (*model.Response, error) {
+func (r *mutationResolver) Login(ctx context.Context, input model.UserLogin) (*model.Response, error) {
 	var barber barber.Barber
 
 	barber.UserName = input.Username

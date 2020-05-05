@@ -4,7 +4,7 @@
 
 type Mutation {
   signUpBarber(input: NewBarber!): Response
-  login(input: Login!): Response
+  login(input: UserLogin!): Response
   refreshToken(input: RefreshTokenInput!): Response @checkAuth
 }
 
@@ -50,7 +50,7 @@ input NewBarber{
   seatNum:      Int!
 }
 
-input Login {
+input UserLogin {
   username: String!
   password: String!
 }

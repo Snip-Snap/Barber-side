@@ -61,7 +61,7 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		Login        func(childComplexity int, input model.Login) int
+		Login        func(childComplexity int, input model.UserLogin) int
 		RefreshToken func(childComplexity int, input model.RefreshTokenInput) int
 		SignUpBarber func(childComplexity int, input model.NewBarber) int
 	}
@@ -79,7 +79,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error)
-	Login(ctx context.Context, input model.Login) (*model.Response, error)
+	Login(ctx context.Context, input model.UserLogin) (*model.Response, error)
 	RefreshToken(ctx context.Context, input model.RefreshTokenInput) (*model.Response, error)
 }
 type QueryResolver interface {
@@ -196,7 +196,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.Login)), true
+		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.UserLogin)), true
 
 	case "Mutation.refreshToken":
 		if e.complexity.Mutation.RefreshToken == nil {
@@ -325,8 +325,8 @@ var sources = []*ast.Source{
 
 type Mutation {
   signUpBarber(input: NewBarber!): Response
-  login(input: Login!): Response
-  refreshToken(input: RefreshTokenInput!): Response
+  login(input: UserLogin!): Response
+  refreshToken(input: RefreshTokenInput!): Response @checkAuth
 }
 
 type Query{
@@ -371,7 +371,7 @@ input NewBarber{
   seatNum:      Int!
 }
 
-input Login {
+input UserLogin {
   username: String!
   password: String!
 }
@@ -390,9 +390,9 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.Login
+	var arg0 model.UserLogin
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNLogin2apiᚋmodelᚐLogin(ctx, tmp)
+		arg0, err = ec.unmarshalNUserLogin2apiᚋmodelᚐUserLogin(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -957,7 +957,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.Login))
+		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.UserLogin))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -994,8 +994,28 @@ func (ec *executionContext) _Mutation_refreshToken(ctx context.Context, field gr
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RefreshToken(rctx, args["input"].(model.RefreshTokenInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RefreshToken(rctx, args["input"].(model.RefreshTokenInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.CheckAuth == nil {
+				return nil, errors.New("directive checkAuth is not implemented")
+			}
+			return ec.directives.CheckAuth(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Response); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *api/model.Response`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2316,30 +2336,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputLogin(ctx context.Context, obj interface{}) (model.Login, error) {
-	var it model.Login
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "username":
-			var err error
-			it.Username, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "password":
-			var err error
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj interface{}) (model.NewBarber, error) {
 	var it model.NewBarber
 	var asMap = obj.(map[string]interface{})
@@ -2427,6 +2423,30 @@ func (ec *executionContext) unmarshalInputRefreshTokenInput(ctx context.Context,
 		case "token":
 			var err error
 			it.Token, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUserLogin(ctx context.Context, obj interface{}) (model.UserLogin, error) {
+	var it model.UserLogin
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2980,10 +3000,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNLogin2apiᚋmodelᚐLogin(ctx context.Context, v interface{}) (model.Login, error) {
-	return ec.unmarshalInputLogin(ctx, v)
-}
-
 func (ec *executionContext) unmarshalNNewBarber2apiᚋmodelᚐNewBarber(ctx context.Context, v interface{}) (model.NewBarber, error) {
 	return ec.unmarshalInputNewBarber(ctx, v)
 }
@@ -3004,6 +3020,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUserLogin2apiᚋmodelᚐUserLogin(ctx context.Context, v interface{}) (model.UserLogin, error) {
+	return ec.unmarshalInputUserLogin(ctx, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
