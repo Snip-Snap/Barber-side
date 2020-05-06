@@ -6,7 +6,6 @@ package api
 import (
 	"api/generated"
 	"api/internal/barber"
-	"api/internal/methods"
 	"api/jwt"
 	"api/model"
 	"context"
@@ -45,7 +44,9 @@ func (r *mutationResolver) Login(ctx context.Context, input model.UserLogin) (*m
 	barber.Password = input.Password
 	if kosher := barber.Authenticate(); !kosher {
 		res := &model.Response{Response: "", Error: "Authentication error."}
-		return res, &methods.WrongUsernameOrPasswordError{}
+		// I removed &methods.WrongUsernameOrPasswordError{}.
+		// Figure out how to parse it in apollo android as an error response.
+		return res, nil
 	}
 	token, err := jwt.GenerateToken(barber.UserName)
 	if err != nil {
