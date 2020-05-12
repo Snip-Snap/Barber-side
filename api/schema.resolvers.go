@@ -6,6 +6,7 @@ package api
 import (
 	"api/generated"
 	"api/internal/barber"
+	"api/internal/database"
 	"api/jwt"
 	"api/model"
 	"context"
@@ -123,6 +124,57 @@ func (r *queryResolver) GetBarberByID(ctx context.Context, id string) (*model.Ba
 		DismissDate: dbBarber.DismissDate,
 		SeatNum:     dbBarber.SeatNum}
 	return resultBarber, nil
+}
+
+func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username string) ([]*model.BarberAppointment, error) {
+	getAppointments := `select  bfirstname, blastname,
+		shopname, streetaddr,
+		apptdate, starttime, endtime, paymenttype, clientcancelled, barbercancelled,
+		cfirstname, clastname,
+		servicename, servicedescription, price, customduration
+		from appt_details where username = $1`
+
+	// getAppointments := "select  bfirstname, blastname, shopname, streetaddr, apptdate, starttime, endtime, paymenttype, clientcancelled, barbercancelled, cfirstname, clastname, servicename, servicedescription, price, customduration from appt_details where username = $1 "
+
+	stmt, err := database.Db.Prepare(getAppointments)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// var resultBarberAppointment []*model.BarberAppointment
+	resultBarberAppointment := []*model.BarberAppointment{}
+	for rows.Next() {
+		barberAppt := &model.BarberAppointment{
+			Barber:      new(model.Barber),
+			Shop:        new(model.Shop),
+			Appointment: &model.Appointment{},
+			Client:      &model.MinClient{},
+			Service:     &model.Service{}}
+		err := rows.Scan(
+			&barberAppt.Barber.FirstName, &barberAppt.Barber.LastName,
+			&barberAppt.Shop.ShopName, &barberAppt.Shop.StreetAddr,
+			&barberAppt.Appointment.ApptDate, &barberAppt.Appointment.StartTime,
+			&barberAppt.Appointment.EndTime, &barberAppt.Appointment.PaymentType,
+			&barberAppt.Appointment.ClientCancelled,
+			&barberAppt.Appointment.BarberCancelled,
+			&barberAppt.Client.FirstName, &barberAppt.Client.LastName,
+			&barberAppt.Service.ServiceName, &barberAppt.Service.ServiceDescription,
+			&barberAppt.Service.Price, &barberAppt.Service.Duration)
+		if err != nil {
+			return nil, err
+		}
+
+		resultBarberAppointment = append(resultBarberAppointment, barberAppt)
+	}
+
+	return resultBarberAppointment, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.

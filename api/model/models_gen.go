@@ -2,6 +2,15 @@
 
 package model
 
+type Appointment struct {
+	ApptDate        string `json:"apptDate"`
+	StartTime       string `json:"startTime"`
+	EndTime         string `json:"endTime"`
+	PaymentType     string `json:"paymentType"`
+	ClientCancelled bool   `json:"clientCancelled"`
+	BarberCancelled bool   `json:"barberCancelled"`
+}
+
 type Barber struct {
 	BarberID    string  `json:"barberID"`
 	ShopID      int     `json:"shopID"`
@@ -15,6 +24,19 @@ type Barber struct {
 	HireDate    string  `json:"hireDate"`
 	DismissDate *string `json:"dismissDate"`
 	SeatNum     int     `json:"seatNum"`
+}
+
+type BarberAppointment struct {
+	Barber      *Barber      `json:"barber"`
+	Shop        *Shop        `json:"shop"`
+	Appointment *Appointment `json:"appointment"`
+	Client      *MinClient   `json:"client"`
+	Service     *Service     `json:"service"`
+}
+
+type MinClient struct {
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }
 
 type NewBarber struct {
@@ -38,6 +60,18 @@ type RefreshTokenInput struct {
 type Response struct {
 	Response string `json:"response"`
 	Error    string `json:"error"`
+}
+
+type Service struct {
+	ServiceName        string  `json:"serviceName"`
+	ServiceDescription string  `json:"serviceDescription"`
+	Price              float64 `json:"price"`
+	Duration           int     `json:"duration"`
+}
+
+type Shop struct {
+	ShopName   string `json:"shopName"`
+	StreetAddr string `json:"streetAddr"`
 }
 
 type UserLogin struct {

@@ -11,6 +11,8 @@ type Mutation {
 type Query{
   getAllBarbers: [Barber!]! @checkAuth
   getBarberByID(id: ID!): Barber! @checkAuth
+  # Add @checkAuth once I figure out how to pass http headers in Apollo!
+  getAppointmentsByUsername(username: String!): [BarberAppointment]!
 }
 
 directive @checkAuth on FIELD_DEFINITION
@@ -33,6 +35,43 @@ type Barber{
   hireDate:     String!
   dismissDate:  String
   seatNum:      Int!
+}
+
+# Maybe flesh out Shop, Appointment, Service, and MinClient?
+# Add more details/fields?
+type BarberAppointment{
+  barber: Barber!
+  shop: Shop!
+  appointment: Appointment!
+  client: MinClient!
+  service: Service!
+}
+
+type Shop{
+  shopName: String!
+  streetAddr: String!
+}
+
+# Look into adding custom Time Scalar Type!
+type Appointment{
+  apptDate: String!
+  startTime: String!
+  endTime: String!
+  paymentType: String!
+  clientCancelled: Boolean!
+  barberCancelled: Boolean!
+}
+
+type MinClient{
+  firstName: String!
+  lastName: String!
+}
+
+type Service{
+  serviceName: String!
+  serviceDescription: String!
+  price: Float!
+  duration: Int!
 }
 
 # input types are like passing in whole objects. Used in mutations and stuff.
