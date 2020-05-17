@@ -90,6 +90,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetAllBarbers             func(childComplexity int) int
+		GetAppointmentByDateRange func(childComplexity int, input model.DateRange) int
 		GetAppointmentsByUsername func(childComplexity int, username string) int
 		GetBarberByID             func(childComplexity int, id string) int
 	}
@@ -121,6 +122,7 @@ type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
 	GetBarberByID(ctx context.Context, id string) (*model.Barber, error)
 	GetAppointmentsByUsername(ctx context.Context, username string) ([]*model.BarberAppointment, error)
+	GetAppointmentByDateRange(ctx context.Context, input model.DateRange) ([]*model.BarberAppointment, error)
 }
 
 type executableSchema struct {
@@ -356,6 +358,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAllBarbers(childComplexity), true
 
+	case "Query.getAppointmentByDateRange":
+		if e.complexity.Query.GetAppointmentByDateRange == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getAppointmentByDateRange_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetAppointmentByDateRange(childComplexity, args["input"].(model.DateRange)), true
+
 	case "Query.getAppointmentsByUsername":
 		if e.complexity.Query.GetAppointmentsByUsername == nil {
 			break
@@ -515,6 +529,7 @@ type Query{
   getBarberByID(id: ID!): Barber! @checkAuth
   # Add @checkAuth once I figure out how to pass http headers in Apollo!
   getAppointmentsByUsername(username: String!): [BarberAppointment]!
+  getAppointmentByDateRange(input: DateRange!): [BarberAppointment]!
 }
 
 directive @checkAuth on FIELD_DEFINITION
@@ -599,7 +614,11 @@ input UserLogin {
 input RefreshTokenInput {
   token: String!
 }
-`, BuiltIn: false},
+
+input DateRange{
+  startDate: String!
+  endDate: String!
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -660,6 +679,20 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getAppointmentByDateRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.DateRange
+	if tmp, ok := rawArgs["input"]; ok {
+		arg0, err = ec.unmarshalNDateRange2apiᚋmodelᚐDateRange(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -1845,6 +1878,47 @@ func (ec *executionContext) _Query_getAppointmentsByUsername(ctx context.Context
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Query().GetAppointmentsByUsername(rctx, args["username"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.BarberAppointment)
+	fc.Result = res
+	return ec.marshalNBarberAppointment2ᚕᚖapiᚋmodelᚐBarberAppointment(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getAppointmentByDateRange(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getAppointmentByDateRange_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetAppointmentByDateRange(rctx, args["input"].(model.DateRange))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3257,6 +3331,30 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputDateRange(ctx context.Context, obj interface{}) (model.DateRange, error) {
+	var it model.DateRange
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "startDate":
+			var err error
+			it.StartDate, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "endDate":
+			var err error
+			it.EndDate, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewBarber(ctx context.Context, obj interface{}) (model.NewBarber, error) {
 	var it model.NewBarber
 	var asMap = obj.(map[string]interface{})
@@ -3676,6 +3774,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAppointmentsByUsername(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getAppointmentByDateRange":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getAppointmentByDateRange(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4161,6 +4273,10 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNDateRange2apiᚋmodelᚐDateRange(ctx context.Context, v interface{}) (model.DateRange, error) {
+	return ec.unmarshalInputDateRange(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {

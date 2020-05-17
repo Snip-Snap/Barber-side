@@ -177,6 +177,53 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 	return resultBarberAppointment, nil
 }
 
+func (r *queryResolver) GetAppointmentByDateRange(ctx context.Context, input model.DateRange) ([]*model.BarberAppointment, error) {
+	getApptByDateRange := `select  bfirstname, blastname,
+		shopname, streetaddr,
+		apptdate, extract(hour from starttime), extract(hour from endtime), paymenttype, clientcancelled, barbercancelled,
+		cfirstname, clastname,
+		servicename, servicedescription, price, customduration
+		from appt_details where apptdate >= $1 and apptdate <= $2`
+
+	stmt, err := database.Db.Prepare(getApptByDateRange)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(input.StartDate, input.EndDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// var resultBarberAppointment []*model.BarberAppointment
+	resultBarberAppointment := []*model.BarberAppointment{}
+	for rows.Next() {
+		barberAppt := &model.BarberAppointment{
+			Barber:      new(model.Barber),
+			Shop:        new(model.Shop),
+			Appointment: &model.Appointment{},
+			Client:      &model.MinClient{},
+			Service:     &model.Service{}}
+		err := rows.Scan(
+			&barberAppt.Barber.FirstName, &barberAppt.Barber.LastName,
+			&barberAppt.Shop.ShopName, &barberAppt.Shop.StreetAddr,
+			&barberAppt.Appointment.ApptDate, &barberAppt.Appointment.StartTime,
+			&barberAppt.Appointment.EndTime, &barberAppt.Appointment.PaymentType,
+			&barberAppt.Appointment.ClientCancelled,
+			&barberAppt.Appointment.BarberCancelled,
+			&barberAppt.Client.FirstName, &barberAppt.Client.LastName,
+			&barberAppt.Service.ServiceName, &barberAppt.Service.ServiceDescription,
+			&barberAppt.Service.Price, &barberAppt.Service.Duration)
+		if err != nil {
+			return nil, err
+		}
+		resultBarberAppointment = append(resultBarberAppointment, barberAppt)
+	}
+	return resultBarberAppointment, nil
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 

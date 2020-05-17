@@ -34,6 +34,11 @@ type BarberAppointment struct {
 	Service     *Service     `json:"service"`
 }
 
+type DateRange struct {
+	StartDate string `json:"startDate"`
+	EndDate   string `json:"endDate"`
+}
+
 type MinClient struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
