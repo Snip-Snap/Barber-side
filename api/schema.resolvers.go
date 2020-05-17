@@ -177,13 +177,13 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 	return resultBarberAppointment, nil
 }
 
-func (r *queryResolver) GetAppointmentByDateRange(ctx context.Context, input model.DateRange) ([]*model.BarberAppointment, error) {
+func (r *queryResolver) GetAppointmentByDateRange(ctx context.Context, input model.BarberDateRange) ([]*model.BarberAppointment, error) {
 	getApptByDateRange := `select  bfirstname, blastname,
 		shopname, streetaddr,
 		apptdate, extract(hour from starttime), extract(hour from endtime), paymenttype, clientcancelled, barbercancelled,
 		cfirstname, clastname,
 		servicename, servicedescription, price, customduration
-		from appt_details where apptdate >= $1 and apptdate <= $2`
+		from appt_details where apptdate >= $1 and apptdate <= $2 and username=$3`
 
 	stmt, err := database.Db.Prepare(getApptByDateRange)
 	if err != nil {
@@ -191,7 +191,7 @@ func (r *queryResolver) GetAppointmentByDateRange(ctx context.Context, input mod
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(input.StartDate, input.EndDate)
+	rows, err := stmt.Query(input.StartDate, input.EndDate, input.UserName)
 	if err != nil {
 		return nil, err
 	}

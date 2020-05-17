@@ -90,7 +90,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		GetAllBarbers             func(childComplexity int) int
-		GetAppointmentByDateRange func(childComplexity int, input model.DateRange) int
+		GetAppointmentByDateRange func(childComplexity int, input model.BarberDateRange) int
 		GetAppointmentsByUsername func(childComplexity int, username string) int
 		GetBarberByID             func(childComplexity int, id string) int
 	}
@@ -122,7 +122,7 @@ type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
 	GetBarberByID(ctx context.Context, id string) (*model.Barber, error)
 	GetAppointmentsByUsername(ctx context.Context, username string) ([]*model.BarberAppointment, error)
-	GetAppointmentByDateRange(ctx context.Context, input model.DateRange) ([]*model.BarberAppointment, error)
+	GetAppointmentByDateRange(ctx context.Context, input model.BarberDateRange) ([]*model.BarberAppointment, error)
 }
 
 type executableSchema struct {
@@ -368,7 +368,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.GetAppointmentByDateRange(childComplexity, args["input"].(model.DateRange)), true
+		return e.complexity.Query.GetAppointmentByDateRange(childComplexity, args["input"].(model.BarberDateRange)), true
 
 	case "Query.getAppointmentsByUsername":
 		if e.complexity.Query.GetAppointmentsByUsername == nil {
@@ -529,7 +529,7 @@ type Query{
   getBarberByID(id: ID!): Barber! @checkAuth
   # Add @checkAuth once I figure out how to pass http headers in Apollo!
   getAppointmentsByUsername(username: String!): [BarberAppointment]!
-  getAppointmentByDateRange(input: DateRange!): [BarberAppointment]!
+  getAppointmentByDateRange(input: BarberDateRange!): [BarberAppointment]!
 }
 
 directive @checkAuth on FIELD_DEFINITION
@@ -615,7 +615,8 @@ input RefreshTokenInput {
   token: String!
 }
 
-input DateRange{
+input BarberDateRange{
+  userName: String!
   startDate: String!
   endDate: String!
 }`, BuiltIn: false},
@@ -685,9 +686,9 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_getAppointmentByDateRange_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model.DateRange
+	var arg0 model.BarberDateRange
 	if tmp, ok := rawArgs["input"]; ok {
-		arg0, err = ec.unmarshalNDateRange2apiᚋmodelᚐDateRange(ctx, tmp)
+		arg0, err = ec.unmarshalNBarberDateRange2apiᚋmodelᚐBarberDateRange(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1918,7 +1919,7 @@ func (ec *executionContext) _Query_getAppointmentByDateRange(ctx context.Context
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAppointmentByDateRange(rctx, args["input"].(model.DateRange))
+		return ec.resolvers.Query().GetAppointmentByDateRange(rctx, args["input"].(model.BarberDateRange))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3331,12 +3332,18 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputDateRange(ctx context.Context, obj interface{}) (model.DateRange, error) {
-	var it model.DateRange
+func (ec *executionContext) unmarshalInputBarberDateRange(ctx context.Context, obj interface{}) (model.BarberDateRange, error) {
+	var it model.BarberDateRange
 	var asMap = obj.(map[string]interface{})
 
 	for k, v := range asMap {
 		switch k {
+		case "userName":
+			var err error
+			it.UserName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "startDate":
 			var err error
 			it.StartDate, err = ec.unmarshalNString2string(ctx, v)
@@ -4261,6 +4268,10 @@ func (ec *executionContext) marshalNBarberAppointment2ᚕᚖapiᚋmodelᚐBarber
 	return ret
 }
 
+func (ec *executionContext) unmarshalNBarberDateRange2apiᚋmodelᚐBarberDateRange(ctx context.Context, v interface{}) (model.BarberDateRange, error) {
+	return ec.unmarshalInputBarberDateRange(ctx, v)
+}
+
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	return graphql.UnmarshalBoolean(v)
 }
@@ -4273,10 +4284,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
-}
-
-func (ec *executionContext) unmarshalNDateRange2apiᚋmodelᚐDateRange(ctx context.Context, v interface{}) (model.DateRange, error) {
-	return ec.unmarshalInputDateRange(ctx, v)
 }
 
 func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {

@@ -34,7 +34,8 @@ type BarberAppointment struct {
 	Service     *Service     `json:"service"`
 }
 
-type DateRange struct {
+type BarberDateRange struct {
+	UserName  string `json:"userName"`
 	StartDate string `json:"startDate"`
 	EndDate   string `json:"endDate"`
 }

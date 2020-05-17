@@ -13,7 +13,7 @@ type Query{
   getBarberByID(id: ID!): Barber! @checkAuth
   # Add @checkAuth once I figure out how to pass http headers in Apollo!
   getAppointmentsByUsername(username: String!): [BarberAppointment]!
-  getAppointmentByDateRange(input: DateRange!): [BarberAppointment]!
+  getAppointmentByDateRange(input: BarberDateRange!): [BarberAppointment]!
 }
 
 directive @checkAuth on FIELD_DEFINITION
@@ -99,7 +99,8 @@ input RefreshTokenInput {
   token: String!
 }
 
-input DateRange{
+input BarberDateRange{
+  userName: String!
   startDate: String!
   endDate: String!
 }
