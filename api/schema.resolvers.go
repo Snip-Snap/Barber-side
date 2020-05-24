@@ -10,6 +10,7 @@ import (
 	"api/jwt"
 	"api/model"
 	"context"
+	"strings"
 )
 
 func (r *mutationResolver) SignUpBarber(ctx context.Context, input model.NewBarber) (*model.Response, error) {
@@ -132,9 +133,7 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 		apptdate, starttime, endtime, paymenttype, clientcancelled, barbercancelled,
 		cfirstname, clastname,
 		servicename, servicedescription, price, customduration
-		from appt_details where username = $1`
-
-	// getAppointments := "select  bfirstname, blastname, shopname, streetaddr, apptdate, starttime, endtime, paymenttype, clientcancelled, barbercancelled, cfirstname, clastname, servicename, servicedescription, price, customduration from appt_details where username = $1 "
+		from appt_details where username = $1 order by starttime`
 
 	stmt, err := database.Db.Prepare(getAppointments)
 	if err != nil {
@@ -157,6 +156,7 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 			Appointment: &model.Appointment{},
 			Client:      &model.MinClient{},
 			Service:     &model.Service{}}
+
 		err := rows.Scan(
 			&barberAppt.Barber.FirstName, &barberAppt.Barber.LastName,
 			&barberAppt.Shop.ShopName, &barberAppt.Shop.StreetAddr,
@@ -167,6 +167,18 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 			&barberAppt.Client.FirstName, &barberAppt.Client.LastName,
 			&barberAppt.Service.ServiceName, &barberAppt.Service.ServiceDescription,
 			&barberAppt.Service.Price, &barberAppt.Service.Duration)
+
+		tmpD := barberAppt.Appointment.ApptDate
+		tmpD = strings.TrimSuffix(tmpD, "T00:00:00Z")
+		barberAppt.Appointment.ApptDate = tmpD
+		println(barberAppt.Appointment.ApptDate)
+
+		tmpS := barberAppt.Appointment.StartTime
+		tmpS = strings.TrimPrefix(tmpS, "0000-01-01T")
+		tmpS = strings.TrimSuffix(tmpS, ":00Z")
+		barberAppt.Appointment.StartTime = tmpS
+		println(barberAppt.Appointment.StartTime)
+
 		if err != nil {
 			return nil, err
 		}
@@ -183,7 +195,8 @@ func (r *queryResolver) GetAppointmentByDateRange(ctx context.Context, input mod
 		apptdate, extract(hour from starttime), extract(hour from endtime), paymenttype, clientcancelled, barbercancelled,
 		cfirstname, clastname,
 		servicename, servicedescription, price, customduration
-		from appt_details where apptdate >= $1 and apptdate <= $2 and username=$3`
+		from appt_details where apptdate >= $1 and apptdate <= $2 and username=$3
+		order by starttime`
 
 	stmt, err := database.Db.Prepare(getApptByDateRange)
 	if err != nil {
