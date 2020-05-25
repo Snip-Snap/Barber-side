@@ -7,6 +7,7 @@ import (
 	"api/generated"
 	"api/internal/barber"
 	"api/internal/database"
+	"api/internal/methods"
 	"api/jwt"
 	"api/model"
 	"context"
@@ -102,11 +103,11 @@ func (r *queryResolver) GetAllBarbers(ctx context.Context) ([]*model.Barber, err
 	return resultBarbers, nil
 }
 
-func (r *queryResolver) GetBarberByID(ctx context.Context, id string) (*model.Barber, error) {
+func (r *queryResolver) GetBarberByUsername(ctx context.Context, username string) (*model.Barber, error) {
 	var resultBarber *model.Barber
 	var dbBarber barber.Barber
 
-	dbBarber.BarberID = id
+	dbBarber.UserName = username
 	if err := dbBarber.Get(); err != nil {
 		return nil, err
 	}
@@ -168,16 +169,12 @@ func (r *queryResolver) GetAppointmentsByUsername(ctx context.Context, username 
 			&barberAppt.Service.ServiceName, &barberAppt.Service.ServiceDescription,
 			&barberAppt.Service.Price, &barberAppt.Service.Duration)
 
-		tmpD := barberAppt.Appointment.ApptDate
-		tmpD = strings.TrimSuffix(tmpD, "T00:00:00Z")
-		barberAppt.Appointment.ApptDate = tmpD
-		println(barberAppt.Appointment.ApptDate)
+		barberAppt.Appointment.ApptDate = methods.RemoveSuffix(
+			barberAppt.Appointment.ApptDate)
 
-		tmpS := barberAppt.Appointment.StartTime
-		tmpS = strings.TrimPrefix(tmpS, "0000-01-01T")
+		tmpS := methods.RemovePrefix(barberAppt.Appointment.StartTime)
 		tmpS = strings.TrimSuffix(tmpS, ":00Z")
 		barberAppt.Appointment.StartTime = tmpS
-		println(barberAppt.Appointment.StartTime)
 
 		if err != nil {
 			return nil, err

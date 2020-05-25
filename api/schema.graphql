@@ -10,7 +10,8 @@ type Mutation {
 
 type Query{
   getAllBarbers: [Barber!]! @checkAuth
-  getBarberByID(id: ID!): Barber! @checkAuth
+  # Add @checkAuth once I figure out how to pass http headers in Apollo!
+  getBarberByUsername(username: String!): Barber!
   # Add @checkAuth once I figure out how to pass http headers in Apollo!
   getAppointmentsByUsername(username: String!): [BarberAppointment]!
   getAppointmentByDateRange(input: BarberDateRange!): [BarberAppointment]!

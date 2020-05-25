@@ -92,9 +92,9 @@ func GetAll() ([]Barber, error) {
 
 // Get selects a specified barber via its ID and modifies the param barber.
 func (barber *Barber) Get() error {
-	selectBarber := "select * from barber where barberid = $1"
+	selectBarber := "select * from barber where username = $1"
 
-	row := database.Db.QueryRow(selectBarber, barber.BarberID)
+	row := database.Db.QueryRow(selectBarber, barber.UserName)
 
 	err := row.Scan(&barber.BarberID, &barber.ShopID, &barber.UserName,
 		&barber.Password, &barber.FirstName, &barber.LastName,
@@ -104,7 +104,8 @@ func (barber *Barber) Get() error {
 	case sql.ErrNoRows:
 		fmt.Println("No rows were returned.")
 	case nil:
-		// fmt.Println(barber.BarberID, barber.FirstName)
+		barber.Dob = methods.RemoveSuffix(barber.Dob)
+		barber.HireDate = methods.RemoveSuffix((barber.HireDate))
 	default:
 		return err
 	}

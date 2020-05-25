@@ -2,6 +2,7 @@ package methods
 
 import (
 	"log"
+	"strings"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -31,4 +32,14 @@ type WrongUsernameOrPasswordError struct{}
 
 func (m *WrongUsernameOrPasswordError) Error() string {
 	return "wrong username or password"
+}
+
+// RemoveSuffix removes suffix from passed in str.
+func RemoveSuffix(str string) string {
+	return strings.TrimSuffix(str, "T00:00:00Z")
+}
+
+// RemovePrefix removes prefix from passed in str.
+func RemovePrefix(str string) string {
+	return strings.TrimPrefix(str, "0000-01-01T")
 }

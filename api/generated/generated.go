@@ -92,7 +92,7 @@ type ComplexityRoot struct {
 		GetAllBarbers             func(childComplexity int) int
 		GetAppointmentByDateRange func(childComplexity int, input model.BarberDateRange) int
 		GetAppointmentsByUsername func(childComplexity int, username string) int
-		GetBarberByID             func(childComplexity int, id string) int
+		GetBarberByUsername       func(childComplexity int, username string) int
 	}
 
 	Response struct {
@@ -120,7 +120,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllBarbers(ctx context.Context) ([]*model.Barber, error)
-	GetBarberByID(ctx context.Context, id string) (*model.Barber, error)
+	GetBarberByUsername(ctx context.Context, username string) (*model.Barber, error)
 	GetAppointmentsByUsername(ctx context.Context, username string) ([]*model.BarberAppointment, error)
 	GetAppointmentByDateRange(ctx context.Context, input model.BarberDateRange) ([]*model.BarberAppointment, error)
 }
@@ -382,17 +382,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetAppointmentsByUsername(childComplexity, args["username"].(string)), true
 
-	case "Query.getBarberByID":
-		if e.complexity.Query.GetBarberByID == nil {
+	case "Query.getBarberByUsername":
+		if e.complexity.Query.GetBarberByUsername == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getBarberByID_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getBarberByUsername_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetBarberByID(childComplexity, args["id"].(string)), true
+		return e.complexity.Query.GetBarberByUsername(childComplexity, args["username"].(string)), true
 
 	case "Response.error":
 		if e.complexity.Response.Error == nil {
@@ -526,7 +526,8 @@ type Mutation {
 
 type Query{
   getAllBarbers: [Barber!]! @checkAuth
-  getBarberByID(id: ID!): Barber! @checkAuth
+  # Add @checkAuth once I figure out how to pass http headers in Apollo!
+  getBarberByUsername(username: String!): Barber!
   # Add @checkAuth once I figure out how to pass http headers in Apollo!
   getAppointmentsByUsername(username: String!): [BarberAppointment]!
   getAppointmentByDateRange(input: BarberDateRange!): [BarberAppointment]!
@@ -711,17 +712,17 @@ func (ec *executionContext) field_Query_getAppointmentsByUsername_args(ctx conte
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getBarberByID_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getBarberByUsername_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+	if tmp, ok := rawArgs["username"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["username"] = arg0
 	return args, nil
 }
 
@@ -1793,7 +1794,7 @@ func (ec *executionContext) _Query_getAllBarbers(ctx context.Context, field grap
 	return ec.marshalNBarber2ᚕᚖapiᚋmodelᚐBarberᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getBarberByUsername(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1809,35 +1810,15 @@ func (ec *executionContext) _Query_getBarberByID(ctx context.Context, field grap
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_getBarberByID_args(ctx, rawArgs)
+	args, err := ec.field_Query_getBarberByUsername_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Query().GetBarberByID(rctx, args["id"].(string))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.CheckAuth == nil {
-				return nil, errors.New("directive checkAuth is not implemented")
-			}
-			return ec.directives.CheckAuth(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, err
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*model.Barber); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *api/model.Barber`, tmp)
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetBarberByUsername(rctx, args["username"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3758,7 +3739,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
-		case "getBarberByID":
+		case "getBarberByUsername":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -3766,7 +3747,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getBarberByID(ctx, field)
+				res = ec._Query_getBarberByUsername(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
