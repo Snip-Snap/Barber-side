@@ -90,7 +90,7 @@ func GetAll() ([]Barber, error) {
 
 }
 
-// Get selects a specified barber via its ID and modifies the param barber.
+// Get selects a specified barber via its username and modifies the receiver barber.
 func (barber *Barber) Get() error {
 	selectBarber := "select * from barber where username = $1"
 

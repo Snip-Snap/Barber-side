@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Db is used to access the db via other packages.
 var Db *sql.DB
 
 func parseCreds(fn string) string {
@@ -27,11 +28,12 @@ func parseCreds(fn string) string {
 	return creds
 }
 
+// ConnectPSQL opens a connection with my psql database.
 func ConnectPSQL() {
 
-	// creds := parseCreds("/run/secrets")
+	creds := parseCreds("/run/secrets")
 	//code when you run manually without docker
-	creds := parseCreds("./../../dbcreds.config")
+	// creds := parseCreds("./../../dbcreds.config")
 
 	var err error
 
@@ -42,6 +44,7 @@ func ConnectPSQL() {
 	}
 }
 
+// ClosePSQL closes connection with psql database.
 func ClosePSQL() {
 	Db.Close()
 }
